@@ -39,12 +39,12 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     ```
 * **Modbus Polling:** This command initiates a read of the Modbus registers:
     ```bash
-    AT+COMMAND1=01 03 00 00 00 06 c5 c8 ,0
+    AT+COMMAND1=01 03 00 00 00 06 c5 c8, 0
     ```
 
 * **Payload Orchestration:** This command handles data slicing. It captures the first 17 bytes, ignores the first 3 bytes (containing the sensor's address, function code, and byte count), and transmits the critical 12 bytes containing the sensor data (bytes 4 through 15):
     ```bash
-    AT+DATACUT1=12,2,4 17
+    AT+DATACUT1=12,2,4~17
     ```
     
 # Python Scripts
