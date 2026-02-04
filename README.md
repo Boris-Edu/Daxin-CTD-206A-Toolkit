@@ -32,9 +32,11 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
 
 * **Sampling and Stabilization:** These commands set the sampling frequency to 5 minutes (300,000 ms) and provide a 10 s (10,000 ms) stabilization period to ensure sensor readings have settled before transmission:
     ```bash
-    AT+TDC=300000, AT+5VT=10000
+    AT+TDC=300000 
     ```
-
+    ```bash
+    AT+5VT=10000 
+    ```
 * **Modbus Polling:** This command initiates a read of the Modbus registers:
     ```bash
     AT+COMMAND1=01 03 00 00 00 06 c5 c8 ,0
