@@ -1,5 +1,28 @@
-CTD-206A Sensor Toolkit
+# Daxin CTD-206A & LoRaWAN Integration Toolkit
 
+This repository provides the utilities and documentation required to integrate the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
+
+## About the Daxin CTD-206A
+The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies. It utilizes a Modbus RTU (RS485) interface to provide three critical environmental parameters:
+* **Conductivity:** Measured via a four-pole graphite probe, providing specific conductivity normalized to $25^{\circ}\text{C}$.
+* **Temperature:** Captured using a high-precision PT1000 RTD.
+* **Depth (Pressure):** Determined through a vented piezoresistive transducer to account for barometric pressure changes.
+
+## System Integration
+This toolkit focuses on the integration of the sensor with the **Dragino RS485-LB** LoRaWAN converter. This combination allows for:
+* **Telemetry without Recurring Fees:** Utilizing the LoRaWAN protocol via The Things Network (TTN).
+* **Energy Autonomy:** Support for solar-powered operation with positive energy balance.
+* **Remote Configuration:** Using AT commands to manage sampling intervals and payload orchestration.
+
+## Product Information
+For detailed hardware specifications and purchasing, refer to the official product pages:
+* **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
+* **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
+
+## Contents
+* `calibration/`: Python scripts for automated multi-point sensor calibration.
+* `telemetry/`: AT command sequences and payload decoders for Dragino converters.
+* `analysis/`: Jupyter notebooks for characterizing sensor bias and dispersion.
 
 ## Configuration of the Converter
 The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of AT commands listed below to poll the Daxin sensor via Modbus and create the LoRaWAN payload.
