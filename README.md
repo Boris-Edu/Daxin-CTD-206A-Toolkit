@@ -16,11 +16,7 @@ This repository includes a specialized JavaScript payload formatter designed for
 
 ### Key Features
 * **Modbus CRC-16 Verification:** Unlike standard decoders, this script re-calculates the Modbus checksum for every packet. This ensures that only data with 100% integrity is passed to your database.
-* **Automatic Unit Normalization:** The formatter detects the sensor's measurement mode (µS/cm vs. mS/cm) and automatically scales all values to a consistent format (µS/cm) for seamless analysis.
-* **Dual-Port Logic:**
-    * **FPort 2:** Decodes high-resolution environmental data (Conductivity, Temperature, Depth).
-    * **FPort 5:** Decodes device-specific status messages, including battery voltage, hardware version, and frequency band information.
-* **Comprehensive Diagnostics:** Extracts metadata including RSSI, SNR, and Battery Voltage to monitor the health of remote deployments.
+* **Automatic Unit Normalization:** The formatter lets you indicate the sensor's measurement mode (µS/cm vs. mS/cm) and scales all values to the chosen unit (µS/cm or ms/cm).
 
 ### How to Use
 1.  Navigate to your **Application** on The Things Stack Console.
