@@ -1,28 +1,35 @@
 # Daxin CTD-206A & LoRaWAN Integration Toolkit
 
-This repository provides the utilities and documentation required to integrate the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
-
+This repository provides the utilities to support integration of the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
+ 
 ## About the Daxin CTD-206A
-The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies. It utilizes a Modbus RTU (RS485) interface to provide three critical environmental parameters:
-* **Conductivity:** Measured via a four-pole graphite probe, providing specific conductivity normalized to $25^{\circ}\text{C}$.
-* **Temperature:** Captured using a high-precision PT1000 RTD.
-* **Depth (Pressure):** Determined through a vented piezoresistive transducer to account for barometric pressure changes.
-
-## System Integration
-This toolkit focuses on the integration of the sensor with the **Dragino RS485-LB** LoRaWAN converter. This combination allows for:
-* **Telemetry without Recurring Fees:** Utilizing the LoRaWAN protocol via The Things Network (TTN).
-* **Energy Autonomy:** Support for solar-powered operation with positive energy balance.
-* **Remote Configuration:** Using AT commands to manage sampling intervals and payload orchestration.
+The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies.
 
 ## Product Information
 For detailed hardware specifications and purchasing, refer to the official product pages:
 * **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
 * **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
 
-## Contents
-* `calibration/`: Python scripts for automated multi-point sensor calibration.
-* `telemetry/`: AT command sequences and payload decoders for Dragino converters.
-* `analysis/`: Jupyter notebooks for characterizing sensor bias and dispersion.
+## TTN Payload Formatter (`TTN_PayloadFormatter.js`)
+
+This repository includes a specialized JavaScript payload formatter designed for **The Things Stack (v3)**. It serves as the bridge between raw LoRaWAN radio packets and actionable environmental data.
+
+### Key Features
+* **Modbus CRC-16 Verification:** Unlike standard decoders, this script re-calculates the Modbus checksum for every packet. This ensures that only data with 100% integrity is passed to your database.
+* **Automatic Unit Normalization:** The formatter detects the sensor's measurement mode (µS/cm vs. mS/cm) and automatically scales all values to a consistent format (µS/cm) for seamless analysis.
+* **Dual-Port Logic:**
+    * **FPort 2:** Decodes high-resolution environmental data (Conductivity, Temperature, Depth).
+    * **FPort 5:** Decodes device-specific status messages, including battery voltage, hardware version, and frequency band information.
+* **Comprehensive Diagnostics:** Extracts metadata including RSSI, SNR, and Battery Voltage to monitor the health of remote deployments.
+
+### How to Use
+1.  Navigate to your **Application** on The Things Stack Console.
+2.  Go to **Payload Formatters** > **Uplink**.
+3.  Select **Formatter type: JavaScript**.
+4.  Copy and paste the contents of `TTN_PayloadFormatter.js` into the editor.
+5.  Click **Save changes**.
+
+Once active, your "Live Data" tab will display formatted JSON objects containing real-time values like `conductivity_uS_cm`, `temp_C`, and `depth_m`.
 
 ## Configuration of the Converter
 The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of AT commands listed below to poll the Daxin sensor via Modbus and create the LoRaWAN payload.
@@ -42,13 +49,13 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     AT+DATACUT1=12,2,4 17
     ```
     
-## Python Utility
-
-1.  **`ctd_control.py`**: 
+## Python Scripts
+ 
+1.  **`*_control.py`**: 
     * Reads live data from the sensor.
     * Logs data to CSV.
     * Performs single-point and multi-point calibration.
-2.  **`visualize_response.py`**:
+2.  **`*_visualize.py`**:
     * Visualizes response time and steady-state values from generated CSV logs.
 
 ## Setup
