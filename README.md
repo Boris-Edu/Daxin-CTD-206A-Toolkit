@@ -10,9 +10,9 @@ For detailed hardware specifications and purchasing, refer to the official produ
 * **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
 * **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
 
-# TTN Payload Formatter (`TTN_PayloadFormatter.js`)
+# TTN Payload Formatter
 
-This repository includes a specialized JavaScript payload formatter designed for **The Things Stack (v3)**. It serves as the bridge between raw LoRaWAN radio packets and actionable environmental data.
+This repository includes a specialized JavaScript payload formatter (`TTN_PayloadFormatter.js`) designed for **The Things Stack (v3)**. It serves as the bridge between raw LoRaWAN radio packets and actionable environmental data.
 
 ## Key Features
 * **Modbus CRC-16 Verification:** Unlike standard decoders, this script re-calculates the Modbus checksum for every packet. This ensures that only data with 100% integrity is passed to your database.
