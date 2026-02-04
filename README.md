@@ -10,15 +10,15 @@ For detailed hardware specifications and purchasing, refer to the official produ
 * **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
 * **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
 
-## TTN Payload Formatter (`TTN_PayloadFormatter.js`)
+# TTN Payload Formatter (`TTN_PayloadFormatter.js`)
 
 This repository includes a specialized JavaScript payload formatter designed for **The Things Stack (v3)**. It serves as the bridge between raw LoRaWAN radio packets and actionable environmental data.
 
-### Key Features
+## Key Features
 * **Modbus CRC-16 Verification:** Unlike standard decoders, this script re-calculates the Modbus checksum for every packet. This ensures that only data with 100% integrity is passed to your database.
 * **Automatic Unit Normalization:** The formatter lets you indicate the sensor's measurement mode (µS/cm vs. mS/cm) and scales all values to the chosen unit (µS/cm or ms/cm).
 
-### How to Use
+## How to Use
 1.  Navigate to your **Application** on The Things Stack Console.
 2.  Go to **Payload Formatters** > **Uplink**.
 3.  Select **Formatter type: JavaScript**.
@@ -27,7 +27,7 @@ This repository includes a specialized JavaScript payload formatter designed for
 
 Once active, your "Live Data" tab will display formatted JSON objects containing real-time values like `conductivity_uS_cm`, `temp_C`, and `depth_m`.
 
-## Configuration of the Converter
+# Configuration of the Converter
 The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of AT commands listed below to poll the Daxin sensor via Modbus and create the LoRaWAN payload.
 
 * **Sampling and Stabilization:** These commands set the sampling frequency to 5 minutes (300,000 ms) and provide a 10 s (10,000 ms) stabilization period to ensure sensor readings have settled before transmission:
@@ -45,7 +45,7 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     AT+DATACUT1=12,2,4 17
     ```
     
-## Python Scripts
+# Python Scripts
  
 1.  **`*_control.py`**: 
     * Reads live data from the sensor.
