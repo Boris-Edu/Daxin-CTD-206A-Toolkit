@@ -48,7 +48,9 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     ```
     
 # Python Scripts
- 
+
+ <img width="413" height="224" alt="image" src="https://github.com/user-attachments/assets/74ec99e8-e82b-4887-87d5-5b92381481ba" />
+
 1.  **`*_control.py`**: 
     * Reads live data from the sensor.
     * Logs data to CSV.
