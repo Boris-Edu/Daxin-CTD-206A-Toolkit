@@ -22,7 +22,7 @@ import csv
 
 # --- Configuration ---
 # UPDATE THIS PORT BEFORE RUNNING
-SERIAL_PORT = 'COM32'  # Windows: 'COMx', Linux: '/dev/ttyUSBx'
+SERIAL_PORT = 'COM11'  # Windows: 'COMx', Linux: '/dev/ttyUSBx'
 
 # Sensor Settings
 BAUDRATE = 9600
@@ -204,28 +204,44 @@ def _validate_read_response(request_frame: bytes, response_frame: bytes) -> (boo
     return True, response_frame[3:-2]
 
 def _parse_measurement_data(data_payload: bytes) -> dict:
-    """Parses the raw 12-byte payload into engineering units."""
-    # Conductivity
+    """
+    Parses the raw 12-byte payload into engineering units.
+    Now also returns the raw 'decimal shift' values for debugging.
+    """
+    # --- Conductivity (Bytes 0-1: Value, Bytes 2-3: Decimal Places) ---
     cond_val = int.from_bytes(data_payload[0:2], 'big', signed=False)
     cond_dec = int.from_bytes(data_payload[2:4], 'big', signed=False)
-    conductivity = cond_val / (10**cond_dec) if cond_dec > 0 else cond_val
+    
+    # Apply decoding: Value / 10^(Decimal Places)
+    conductivity = cond_val / (10**cond_dec) if cond_dec > 0 else float(cond_val)
 
-    # Temperature
+    # --- Temperature (Bytes 4-5: Value, Bytes 6-7: Decimal Places) ---
     temp_val = int.from_bytes(data_payload[4:6], 'big', signed=True)
     temp_dec = int.from_bytes(data_payload[6:8], 'big', signed=False)
-    temp_c = temp_val / (10**temp_dec) if temp_dec > 0 else temp_val
+    
+    # Apply decoding
+    temp_c = temp_val / (10**temp_dec) if temp_dec > 0 else float(temp_val)
     temp_f = temp_c * 9/5 + 32
 
-    # Level
+    # --- Liquid Level (Bytes 8-9: Value, Bytes 10-11: Decimal Places) ---
     level_val = int.from_bytes(data_payload[8:10], 'big', signed=False)
     level_dec = int.from_bytes(data_payload[10:12], 'big', signed=False)
-    level_mm = level_val / (10**level_dec) if level_dec > 0 else level_val
+    
+    # Apply decoding
+    level_mm = level_val / (10**level_dec) if level_dec > 0 else float(level_val)
 
     return {
         'conductivity': conductivity,
+        'cond_raw_val': cond_val,      # Raw Integer (0-65535)
+        'cond_decimal_shift': cond_dec,# Decimal Places (e.g., 0, 1, 2, 3)
+        
         'temperature_celsius': temp_c,
-        'temperature_fahrenheit': temp_f,
-        'liquid_level_mm': level_mm
+        'temp_raw_val': temp_val,
+        'temp_decimal_shift': temp_dec,
+        
+        'liquid_level_mm': level_mm,
+        'level_raw_val': level_val,
+        'level_decimal_shift': level_dec
     }
 
 def get_measurements_fast(ser: serial.Serial, device_address: int = 1) -> dict | None:
@@ -239,7 +255,7 @@ def get_measurements_fast(ser: serial.Serial, device_address: int = 1) -> dict |
     try:
         ser.flushInput()
         ser.write(frame)
-        time.sleep(0.5)
+        time.sleep(0.2)
         response = ser.read(ser.in_waiting)
         is_valid, payload = _validate_read_response(frame, response)
         return _parse_measurement_data(payload) if is_valid else None
@@ -247,8 +263,13 @@ def get_measurements_fast(ser: serial.Serial, device_address: int = 1) -> dict |
         return None
 
 def start_continuous_read_loop(ser: serial.Serial, device_address: int = 1, interval_sec: float = 1.0):
-    """Continuously prints sensor readings to console."""
+    """
+    Continuously prints sensor readings to console with extended debug info.
+    """
     print(f"--- Continuous Read (Interval: {interval_sec}s) - Ctrl+C to stop ---")
+    print(f"{'TIME':<12} | {'COND (uS/mS)':<12} | {'RAW':<6} {'DEC':<3} | {'TEMP (C)':<10} | {'LEVEL (mm)':<10}")
+    print("-" * 80)
+    
     try:
         while True:
             start_time = time.time()
@@ -256,9 +277,17 @@ def start_continuous_read_loop(ser: serial.Serial, device_address: int = 1, inte
             
             if data:
                 ts = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                print(f"  > [{ts}] COND: {data['conductivity']:.2f} uS | TEMP: {data['temperature_celsius']:.1f} C | LVL: {data['liquid_level_mm']:.1f} mm  ", end='\r\n')
+                
+                # Format the output to show the calculated value AND the raw decoding components
+                print(f"{ts:<12} | "
+                      f"{data['conductivity']:<12.3f} | "
+                      f"{data['cond_raw_val']:<6} "
+                      f"{data['cond_decimal_shift']:<3} | "
+                      f"{data['temperature_celsius']:<10.1f} | "
+                      f"{data['liquid_level_mm']:<10.1f}", 
+                      end='\r')
             else:
-                print("  > No device response...                          ", end='\r')
+                print(f"{'No response...':<75}", end='\r')
                 
             elapsed = time.time() - start_time
             time.sleep(max(0, interval_sec - elapsed))
@@ -296,7 +325,7 @@ def log_data_to_csv(ser: serial.Serial, filename: str, device_address: int = 1, 
 
     except KeyboardInterrupt:
         print(f"\nStopped. Data saved to {filename}.")
-
+        plot_sensor_response('sensor_log.csv')
 
 # --- Main Execution / Interactive Block ---
 if __name__ == "__main__":
@@ -317,18 +346,159 @@ if __name__ == "__main__":
         print(f"Error connecting to {SERIAL_PORT}: {e}")
         ser = None
 
-    # Note: The blocks below are set up for Spyder/VSCode Interactive execution
-    # Uncomment the function calls to run them.
+def set_conductivity_mode(ser: serial.Serial, mode: int, device_address: int = 1):
+    """
+    Switches the conductivity measurement unit.
+    Register: 0x8009
+    
+    Modes:
+    0: Conductivity (uS/cm) - Default. Max ~65.5 mS/cm.
+    1: Conductivity (mS/cm) - Use this if value > 65 mS/cm.
+    2: TDS (ppm)
+    3: Salinity (ppt)
+    """
+    valid_modes = {
+        0: "uS/cm",
+        1: "mS/cm",
+        2: "ppm",
+        3: "ppt"
+    }
+    
+    if mode not in valid_modes:
+        print(f"Error: Invalid mode {mode}. Options: 0=uS, 1=mS, 2=ppm, 3=ppt")
+        return False, "Invalid Mode"
+
+    print(f"--- Switching Conductivity Mode to {mode} ({valid_modes[mode]}) ---")
+    
+    # Send command to Register 0x8009
+    return _send_calibration_frame(ser, device_address, 0x8009, mode)
+
+def plot_sensor_response(filename: str):
+    """
+    Reads sensor log data, splits it into trials based on time gaps,
+    normalizes the data, and plots the response curves.
+    """
+    # 1. Load Data
+    try:
+        df = pd.read_csv(filename)
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found. Please run the logging script first.")
+        return
+
+    # Cleanup headers
+    df.columns = df.columns.str.strip()
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+
+    # 2. Separate Trials
+    # Logic: If the time difference between rows is > 5 seconds, assume a new trial started.
+    df['dt'] = df['Timestamp'].diff().dt.total_seconds()
+    split_indices = df[df['dt'] > 5].index.tolist()
+    starts = [0] + split_indices
+    ends = split_indices + [len(df)]
+    
+    trials = []
+    cols = ['Conductivity (uS/cm)', 'Temperature (C)', 'Liquid Level (mm)']
+    steady_vals_accumulator = {c: [] for c in cols}
+
+    for s, e in zip(starts, ends):
+        sub = df.iloc[s:e].copy()
+        if len(sub) < 10: continue  # Skip short snippets
+        
+        # Find start of activity (first non-zero value)
+        is_active = sub[cols].ne(0).any(axis=1)
+        if not is_active.any(): continue 
+        start_idx = is_active.idxmax()
+        sub = sub.loc[start_idx:].copy()
+        
+        # Normalize to steady state (average of last 5 points)
+        sub_norm = sub.copy()
+        for col in cols:
+            val = sub[col].iloc[-5:].mean()
+            if pd.isna(val) or val == 0: val = 1
+            sub_norm[col] = sub[col] / val
+            steady_vals_accumulator[col].append(val)
+            
+        sub_norm['Time'] = (sub['Timestamp'] - sub['Timestamp'].iloc[0]).dt.total_seconds()
+        trials.append(sub_norm.set_index('Time')[cols])
+
+    if not trials:
+        print("No valid trials found in the data.")
+        return
+
+    # 3. Average Trials
+    common_time = np.linspace(0, 15, 150)
+    avg_df = pd.DataFrame(index=common_time)
+    for col in cols:
+        interp_vals = []
+        for t in trials:
+            valid_t = t[~t.index.duplicated()]
+            val = np.interp(common_time, valid_t.index, valid_t[col], left=np.nan, right=np.nan)
+            interp_vals.append(val)
+        avg_df[col] = np.nanmean(interp_vals, axis=0)
+
+    # 4. Plot Setup
+    fig, ax_main = plt.subplots(figsize=(10, 6))
+    
+    # Reserve space on the right for the extra axes
+    plt.subplots_adjust(right=0.75) 
+
+    colors = {'Conductivity (uS/cm)': 'blue', 'Temperature (C)': 'red', 'Liquid Level (mm)': 'green'}
+    labels = {'Conductivity (uS/cm)': 'Conductivity', 'Temperature (C)': 'Temperature', 'Liquid Level (mm)': 'Depth'}
+    
+    # Plot Normalized Curves
+    for col in cols:
+        ax_main.plot(avg_df.index, avg_df[col], color=colors[col], label=labels[col], linewidth=2)
+
+    ax_main.set_xlim(0, 12)
+    ax_main.set_ylim(0, 1.1)
+    ax_main.set_xlabel("Time (seconds)")
+    ax_main.set_ylabel("Normalized Response")
+    ax_main.set_title("Sensor Response Time")
+    ax_main.legend(loc='lower right')
+    ax_main.grid(True, linestyle='--', alpha=0.5)
+    ax_main.axhline(1.0, color='k', linestyle=':', alpha=0.5)
+
+    # 5. Configure Twin Axes for Real Scales
+    avg_steady_vals = {k: np.mean(v) for k, v in steady_vals_accumulator.items()}
+    
+    # (Axis Object, Column Name, Label, Color, Position Offset)
+    scales = [
+        (ax_main.twinx(), 'Temperature (C)', 'Temperature (°C)', 'red', 1.0),
+        (ax_main.twinx(), 'Conductivity (uS/cm)', 'Conductivity (uS/cm)', 'blue', 1.15),
+        (ax_main.twinx(), 'Liquid Level (mm)', 'Depth (mm)', 'green', 1.3)
+    ]
+
+    for ax, col, label, color, pos in scales:
+        ss_val = avg_steady_vals[col]
+        ax.spines["right"].set_position(("axes", pos))
+        ax.set_frame_on(True)
+        ax.patch.set_visible(False)
+        ax.set_ylim(0, 1.1 * ss_val)
+        ax.set_ylabel(label, color=color)
+        ax.tick_params(axis='y', labelcolor=color)
+
+    output_file = 'sensor_response_plot.png'
+    plt.savefig(output_file, bbox_inches='tight', dpi=300)
+    print(f"Success: Plot saved to {output_file}")
+    plt.show()
 
 #%% 
 if ser:
     # --- Example: Data Logging ---
-    log_data_to_csv(ser, filename="sensor_log.csv", device_address=DEFAULT_ADDRESS, interval_sec=1.0)
+    log_data_to_csv(ser, filename="sensor_log.csv", device_address=DEFAULT_ADDRESS, interval_sec=0.0)
+
 
 #%%
 if ser:
     # --- Example: Continuous Read to Console ---
-    start_continuous_read_loop(ser, DEFAULT_ADDRESS, interval_sec=0.5)
+    start_continuous_read_loop(ser, DEFAULT_ADDRESS, interval_sec=0.1)
+
+#%%
+if ser:
+    # --- Example: Continuous Read to Console ---
+    # This function writes to register 0x8009.
+    # You can use this to switch from uS/cm (Mode 0) to mS/cm (Mode 1) if your readings are overflowing (65535).
+    set_conductivity_mode(ser, mode=1, device_address = 1)
 
 #%%
 # ==========================================
@@ -350,3 +520,4 @@ if ser:
 # 4. CONDUCTIVITY SLOPE (Standard Solution)
 # start_continuous_read_loop(ser, DEFAULT_ADDRESS, interval_sec=0.1)
 # calibrate_cond_single_point_slope(ser, standard_value_us=1413, device_address=DEFAULT_ADDRESS)
+
