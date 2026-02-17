@@ -1,26 +1,26 @@
-# Daxin CTD-206A & LoRaWAN Integration Toolkit
+# 📡 Daxin CTD-206A & LoRaWAN Integration Toolkit
 
 This repository provides the utilities to support integration of the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
 
 <img width="1445" height="765" alt="ToolBoxScreenshots" src="https://github.com/user-attachments/assets/58640347-3da4-424b-8d2f-e87163196779" />
 
-## About the Daxin CTD-206A
+## 🌊 About the Daxin CTD-206A
 The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies.
 
-## Product Information
+## 🛍️ Product Information
 For detailed hardware specifications and purchasing, refer to the official product pages:
 * **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
 * **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
 
-# TTN Payload Formatter
+# 📨 TTN Payload Formatter
 
 This repository includes a specialized JavaScript payload formatter (`TTN_PayloadFormatter.js`) designed for **The Things Stack (v3)**. It serves as the bridge between raw LoRaWAN radio packets and actionable environmental data.
 
-## Key Features
+## ✨ Key Features
 * **Modbus CRC-16 Verification:** Unlike standard decoders, this script re-calculates the Modbus checksum for every packet. This ensures that only data with 100% integrity is passed to your database.
 * **Automatic Unit Normalization:** The formatter lets you indicate the sensor's measurement mode (µS/cm vs. mS/cm) and scales all values to the chosen unit (µS/cm or ms/cm).
 
-## How to Use
+## 📋 How to Use
 1.  Navigate to your **Application** on The Things Stack Console.
 2.  Go to **Payload Formatters** > **Uplink**.
 3.  Select **Formatter type: JavaScript**.
@@ -29,7 +29,27 @@ This repository includes a specialized JavaScript payload formatter (`TTN_Payloa
 
 Once active, your "Live Data" tab will display formatted JSON objects containing real-time values like `conductivity_uS_cm`, `temp_C`, and `depth_m`.
 
-# Configuration of the Converter
+## 🛠 Hardware Integration
+
+### Connector Preparation
+The Daxin sensors are delivered with male-female connectors that require manual soldering[cite: 66].
+* **Wiring:** Solder at least 2 inches of **AWG 16 to 20** wire to the connector pins[cite: 66].
+* **Enclosure Modification:** Remove the standard cable gland from the Dragino enclosure[cite: 67].
+* **Hole Size:** The hole diameter must be slightly above **15mm** to accommodate the new connector[cite: 68].
+* **Weatherproofing:** Apply sealant or a joint (such as liquid tape) during installation to maintain the enclosure's weatherproofing[cite: 73].
+
+### Wiring Schematic
+The wiring is determined by the numbering embossed on the connector. Map these to the Dragino PCB terminal block as shown below:
+
+| Daxin Connector Pin | Dragino PCB Terminal | Function |
+| :--- | :--- | :--- |
+| Power (V+) | **VBAT_OUT** or **+5V** | Sensor Power |
+| RS485-A | **A** | Modbus Data + |
+| RS485-B | **B** | Modbus Data -  |
+| Ground (GND) | **GND** | Common Ground |
+
+
+# ⚙️ Configuration of the Converter
 The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of AT commands listed below to poll the Daxin sensor via Modbus and create the LoRaWAN payload.
 
 * **Sampling and Stabilization:** These commands set the sampling frequency to 5 minutes (300,000 ms) and provide a 10 s (10,000 ms) stabilization period to ensure sensor readings have settled before transmission:
@@ -49,12 +69,27 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     AT+DATACUT1=12,2,4~17
     ```
     
-# Python ToolBox
+# 🐍 Python ToolBox
 This toolkit provides a comprehensive graphical user interface and Python API for interacting with the Daxin CTD-206A sensor via Modbus RTU protocol.
 
-## Components
+## 🔌 Hardware Requirement: RS485 USB Adapter
 
-### 1. **`Daxin_CTD206A_UI.py`** - Graphical User Interface
+### 1. Purpose
+The adapter converts the USB signals from your PC into the differential voltage signals used by the RS485 protocol. This allows your computer to act as the "Master" device in a Modbus or serial network, enabling manual sensor polling or calibration via scripts.
+
+### 2. Key Specifications to Look For
+When purchasing, ensure the device meets these criteria to avoid connectivity issues:
+
+* **Chipset Reliability**: Look for adapters using FTDI or CP2102 chips. These have the most stable driver support across Windows, macOS, and Linux.
+* **Terminal Blocks**: Ensure it has a screw terminal connector; A, B, 5V, and GND.
+
+We recommend sourcing a spare female connector to conveniently connect Daxin sensors to that key. These connectors are affordable and can be sourced easily. They are usually named **"aviation connectors"** or **GX16 5 Pins**..
+<img width="780" height="476" alt="image" src="https://github.com/user-attachments/assets/54085bdb-0dbd-42a4-b711-1e9e53b61a2a" />
+
+    
+## 📦 Components
+
+### 1. 🖥️ **`Daxin_CTD206A_UI.py`** - Graphical User Interface
 A full-featured desktop application built with Tkinter that provides:
 
 #### Real-Time Monitoring
@@ -90,7 +125,7 @@ A full-featured desktop application built with Tkinter that provides:
 * **Dark mode visualization** with color-coded axes
 * **Button state management** (calibration disabled during logging/reading)
 
-### 2. **`Daxin_CTD206A_functions.py`** - Python API
+### 2. 🔧 **`Daxin_CTD206A_functions.py`** - Python API
 Low-level Python functions for Modbus communication and sensor control:
 
 #### Communication Functions
@@ -115,7 +150,7 @@ Low-level Python functions for Modbus communication and sensor control:
 * `_parse_measurement_data()` - Decodes raw Modbus payload with automatic decimal scaling
 * `_validate_read_response()` - CRC validation and error detection
 
-## Setup
+## 🚀 Setup
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -128,7 +163,7 @@ Low-level Python functions for Modbus communication and sensor control:
    python Daxin_CTD206A_UI.py
    ```
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Using the UI
 1. Select your COM port from the dropdown
@@ -159,12 +194,12 @@ success, msg = ctd.calibrate_cond_single_point_slope(ser, 1413)
 print(msg)
 ```
 
-## License
+## 📄 License
 MIT License - Free to use, modify, and distribute. See file headers for full license text.
 
 This software can be reused and improved for future sensor versions (note: future versions may use different Modbus registers).
 
-## Acknowledgments
+## 🙏 Acknowledgments
 This work was developed at the **East Carolina University Water Resources Center (WRC)**, Department of Earth, Environment and Planning.
 
 **Funding:** This work was supported by the National Science Foundation under Grant No. 2052889.
