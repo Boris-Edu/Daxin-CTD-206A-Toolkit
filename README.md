@@ -1,7 +1,8 @@
 # Daxin CTD-206A & LoRaWAN Integration Toolkit
 
 This repository provides the utilities to support integration of the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
- 
+<img width="1445" height="765" alt="ToolBoxScreenshots" src="https://github.com/user-attachments/assets/2618669b-b62f-408a-a884-1a9008cfb028" />
+
 ## About the Daxin CTD-206A
 The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies.
 
@@ -48,9 +49,6 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     ```
     
 # Python ToolBox
-
- <img width="413" height="224" alt="image" src="https://github.com/user-attachments/assets/74ec99e8-e82b-4887-87d5-5b92381481ba" />
-
 This toolkit provides a comprehensive graphical user interface and Python API for interacting with the Daxin CTD-206A sensor via Modbus RTU protocol.
 
 ## Components
