@@ -47,18 +47,120 @@ The Dragino RS485-LS LoRaWAN converter must be configured using the sequence of 
     AT+DATACUT1=12,2,4~17
     ```
     
-# Python Scripts
+# Python ToolBox
 
  <img width="413" height="224" alt="image" src="https://github.com/user-attachments/assets/74ec99e8-e82b-4887-87d5-5b92381481ba" />
 
-1.  **`*_control.py`**: 
-    * Reads live data from the sensor.
-    * Logs data to CSV.
-    * Performs single-point and multi-point calibration.
-2.  **`*_visualize.py`**:
-    * Visualizes response time and steady-state values from generated CSV logs.
+This toolkit provides a comprehensive graphical user interface and Python API for interacting with the Daxin CTD-206A sensor via Modbus RTU protocol.
+
+## Components
+
+### 1. **`Daxin_CTD206A_UI.py`** - Graphical User Interface
+A full-featured desktop application built with Tkinter that provides:
+
+#### Real-Time Monitoring
+* **Live sensor readings** with large, color-coded displays for:
+  * Conductivity (µS/cm or dS/cm)
+  * Temperature (°C)
+  * Liquid Level (mm)
+* **Dynamic plot visualization** with auto-scaling axes
+* **Configurable sampling rate** (default: 0.5 seconds)
+* **Adjustable time window** (default: 60 seconds)
+
+#### Data Logging
+* **CSV export** with timestamped measurements
+* **Modbus packet logging** for debugging and protocol analysis
+* Live/Stop logging controls
+* Color-coded log viewer (TX, RX, parsed data, errors)
+
+#### Calibration Tools
+* **Conductivity Calibration:**
+  * Zero calibration (sensor in air)
+  * Single-point slope calibration (with standard solution)
+  * Multi-point slope calibration (up to 5 points)
+* **Level/Depth Calibration:**
+  * Zero calibration (sensor in air)
+  * Slope calibration (known depth)
+* **Temperature Calibration:**
+  * Offset adjustment (0.1°C resolution)
+
+#### Advanced Features
+* **Conductivity unit switching** (µS/cm ↔ dS/cm)
+* **Measurement mode selection** (conductivity, TDS, salinity)
+* **Auto-refresh COM port detection**
+* **Dark mode visualization** with color-coded axes
+* **Button state management** (calibration disabled during logging/reading)
+
+### 2. **`Daxin_CTD206A_functions.py`** - Python API
+Low-level Python functions for Modbus communication and sensor control:
+
+#### Communication Functions
+* `calculate_crc()` - Modbus CRC-16 checksum calculation
+* `get_measurements_fast()` - Fast polling for continuous data acquisition
+* `start_continuous_read_loop()` - Terminal-based live monitoring
+* `log_data_to_csv()` - Command-line data logging
+
+#### Calibration Functions
+* `calibrate_cond_zero()` - Conductivity zero point calibration
+* `calibrate_cond_single_point_slope()` - Single standard calibration
+* `calibrate_cond_multi_point_slope()` - Multi-point calibration (1-5 points)
+* `calibrate_level_zero()` - Depth zero point (P0)
+* `calibrate_level_slope()` - Depth slope calibration
+* `calibrate_temperature_offset()` - Temperature offset adjustment
+
+#### Configuration Functions
+* `set_conductivity_mode()` - Switch between µS/cm, mS/cm, TDS (ppm), Salinity (ppt)
+* `check_calibration_success()` - Response validation for write commands
+
+#### Data Parsing
+* `_parse_measurement_data()` - Decodes raw Modbus payload with automatic decimal scaling
+* `_validate_read_response()` - CRC validation and error detection
 
 ## Setup
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   ```
+
+2. Connect the CTD-206A sensor via RS485-to-USB adapter
+
+3. Launch the UI application:
+   ```bash
+   python Daxin_CTD206A_UI.py
+   ```
+
+## Usage Examples
+
+### Using the UI
+1. Select your COM port from the dropdown
+2. Click **Connect**
+3. Click **Start** to begin reading data
+4. Use **Log CSV** to save measurements to file
+5. Perform calibrations when sensor is stable and not actively logging
+
+### Using the Python API
+```python
+import serial
+import Daxin_CTD206A_functions as ctd
+
+# Connect to sensor
+ser = serial.Serial('COM3', 9600, timeout=1)
+
+# Read single measurement
+data = ctd.get_measurements_fast(ser)
+print(f"Conductivity: {data['conductivity']} µS/cm")
+print(f"Temperature: {data['temperature_celsius']} °C")
+
+# Perform zero calibration (sensor in air)
+success, msg = ctd.calibrate_cond_zero(ser)
+print(msg)
+
+# Calibrate with 1413 µS/cm standard
+success, msg = ctd.calibrate_cond_single_point_slope(ser, 1413)
+print(msg)
+```
+
+## License
+MIT License - Free to use, modify, and distribute. See file headers for full license text.
+
+This software can be reused and improved for future sensor versions (note: future versions may use different Modbus registers).
