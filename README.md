@@ -83,7 +83,7 @@ When purchasing, ensure the device meets these criteria to avoid connectivity is
 * **Chipset Reliability**: Look for adapters using FTDI or CP2102 chips. These have the most stable driver support across Windows, macOS, and Linux.
 * **Terminal Blocks**: Ensure it has a screw terminal connector; A, B, 5V, and GND.
 
-We recommend sourcing a spare female connector to conveniently connect Daxin sensors to that key. These connectors are affordable and can be sourced easily. They are usually named **"aviation connectors"** or **GX16 5 Pins**..
+We recommend sourcing a spare female connector to conveniently connect Daxin sensors to that key. These connectors are affordable and can be sourced easily. They are usually named **"aviation connectors"** or **GX16 5 Pins**.
 <img width="780" height="476" alt="image" src="https://github.com/user-attachments/assets/54085bdb-0dbd-42a4-b711-1e9e53b61a2a" />
 
     
