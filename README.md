@@ -164,3 +164,10 @@ print(msg)
 MIT License - Free to use, modify, and distribute. See file headers for full license text.
 
 This software can be reused and improved for future sensor versions (note: future versions may use different Modbus registers).
+
+## Acknowledgments
+This work was developed at the **East Carolina University Water Resources Center (WRC)**, Department of Earth, Environment and Planning.
+
+**Funding:** This work was supported by the National Science Foundation under Grant No. 2052889.
+
+**Authors:** Boris Dessimond, Alex K. Manda, Stephen Moysey, Robert Howard, Char'Rese Finney
