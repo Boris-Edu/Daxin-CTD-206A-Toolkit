@@ -11,6 +11,8 @@ The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer de
 For detailed hardware specifications and purchasing, refer to the official product pages:
 * **Daxin CTD-206A Sensor:** [Daxin Technology Official Site](http://www.daxinsensor.com/en/index.php?m=content&c=index&a=show&catid=10&id=46)
 * **Dragino RS485-LB Converter:** [Dragino RS485-LB Product Page](https://www.dragino.com/products/lora-lorawan-end-node/item/203-rs485-lb.html)
+### 📌 Alternative LoRaWAN Bridge Options
+LoRaWAN converter devices designed as flexible bridging units capable of connecting diverse sensor protocols to LoRaWAN networks are offered by multiple manufacturers. Both **Dragino** and **Milesight** provide similar products. While this toolkit is optimized for Dragino converters, the underlying Modbus communication principles and payload formatting concepts are applicable to comparable devices from other vendors. Your choice of converter may depend on availability, pricing, regional support, and specific feature requirements.
 
 # 📨 TTN Payload Formatter
 
