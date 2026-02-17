@@ -1,7 +1,8 @@
 # Daxin CTD-206A & LoRaWAN Integration Toolkit
 
 This repository provides the utilities to support integration of the **Daxin CTD-206A** sensor with **Dragino LoRaWAN converters** for autonomous, long-range environmental monitoring.
-<img width="1445" height="765" alt="ToolBoxScreenshots" src="https://github.com/user-attachments/assets/2618669b-b62f-408a-a884-1a9008cfb028" />
+
+<img width="1445" height="765" alt="ToolBoxScreenshots" src="https://github.com/user-attachments/assets/58640347-3da4-424b-8d2f-e87163196779" />
 
 ## About the Daxin CTD-206A
 The Daxin CTD-206A is a cost-effective, industrial-grade submerged transducer designed for high-resolution monitoring of water bodies.
